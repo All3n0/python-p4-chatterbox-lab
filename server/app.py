@@ -17,37 +17,18 @@ db.init_app(app)
 @app.route('/messages', methods=['POST', 'GET'])
 def messages():
     if request.method == 'GET':
-        messages=[]
-
-        for message in Message.query.all():
-            messages.append({
-                'id': message.id,
-                'body': message.body,
-                'username': message.username,
-                'created_at': message.created_at,
-                'updated_at': message.updated_at
-            })
-
-        return jsonify(messages)
+       message=Message.query.all()
+       return make_response([message.to_dict() for message in message], 200)
     elif request.method == 'POST':
-        body = request.get_json()['body']
-        username = request.get_json()['username']
-
-        message = Message(
-            body=body,
-            username=username
+        data=request.get_json()
+        message=Message(
+            body=data['body'],
+            username=data['username']
         )
-
         db.session.add(message)
         db.session.commit()
 
-        return make_response(jsonify({
-            'id': message.id,
-            'body': message.body,
-            'username': message.username,
-            'created_at': message.created_at,
-            'updated_at': message.updated_at
-        }))
+        return make_response(message.to_dict(), 201)
 
 @app.route('/messages/<int:id>', methods=['PATCH', 'DELETE'])
 def messages_by_id(id):
